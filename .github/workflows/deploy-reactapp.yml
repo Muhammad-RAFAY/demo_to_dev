@@ -27,14 +27,16 @@ jobs:
       - name: Zip Build Folder
         run: zip -r build.zip build
 
-      - name: Deploy to Azure VM
-        uses: appleboy/winrm-action@v1.0.0
+      - name: Stop IIS and Clean wwwroot
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.AZURE_VM_IP }}
           username: ${{ secrets.AZURE_VM_USERNAME }}
           password: ${{ secrets.AZURE_VM_PASSWORD }}
-          port: 5985
+          port: 22
           script: |
-            Remove-Item -Recurse -Force C:\inetpub\wwwroot\*
+            powershell -Command "iisreset /stop"
+            powershell -Command "Remove-Item -Recurse -Force C:\inetpub\wwwroot\*"
+
 
 
