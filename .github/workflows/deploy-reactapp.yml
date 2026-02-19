@@ -27,4 +27,14 @@ jobs:
       - name: Zip Build Folder
         run: zip -r build.zip build
 
+      - name: Deploy to Azure VM
+        uses: appleboy/winrm-action@v1.0.0
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          port: 5985
+          script: |
+            Remove-Item -Recurse -Force C:\inetpub\wwwroot\*
+
 
