@@ -7,7 +7,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          This is App for Regular App deploying on Azure...! Using Github Actions.
+          ..This is App for Regular App deploying on Azure...! Using Github Actions.
         </p>
         <a
           className="App-link"
