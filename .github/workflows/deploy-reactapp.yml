@@ -38,5 +38,25 @@ jobs:
             powershell -Command "iisreset /stop"
             powershell -Command "Remove-Item -Recurse -Force C:\inetpub\wwwroot\*"
 
+      - name: Copy Files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          port: 22
+          source: "build/*"
+          target: "C:/inetpub/wwwroot"
+
+      - name: Start IIS
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          port: 22
+          script: |
+            powershell -Command "Start-Service W3SVC"
+
 
 
