@@ -1,10 +1,10 @@
 name: React CI/CD to Azure VM IIS
-  
+
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -20,14 +20,11 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
- 
+
       - name: Build React App
         run: npm run build
 
-      - name: Zip Build Folder
-        run: zip -r build.zip build
-
-      - name: Stop IIS and Clean wwwroot
+      - name: Stop IIS and Clean ReactJsApp Folder
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.AZURE_VM_IP }}
@@ -35,18 +32,22 @@ jobs:
           password: ${{ secrets.AZURE_VM_PASSWORD }}
           port: 22
           script: |
-            powershell -Command "iisreset /stop"
-            powershell -Command "Remove-Item -Recurse -Force C:\inetpub\wwwroot\ReactJsApp\*"
+            # Stop IIS
+            powershell -Command "Stop-Service W3SVC -Force"
+            # Remove old folder contents
+            powershell -Command "if (Test-Path 'C:\inetpub\wwwroot\ReactJsApp') { Remove-Item -Recurse -Force 'C:\inetpub\wwwroot\ReactJsApp\*' }"
+            # Recreate folder if not exists
+            powershell -Command "if (-Not (Test-Path 'C:\inetpub\wwwroot\ReactJsApp')) { New-Item -ItemType Directory -Path 'C:\inetpub\wwwroot\ReactJsApp' }"
 
-      - name: Copy Files to VM
+      - name: Copy React App Contents to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.AZURE_VM_IP }}
           username: ${{ secrets.AZURE_VM_USERNAME }}
           password: ${{ secrets.AZURE_VM_PASSWORD }}
           port: 22
-          source: "build/*"
-          target: "C:/inetpub/wwwroot/ReactJsApp"
+          source: "build/*"                         # Only contents of build
+          target: "C:/inetpub/wwwroot/ReactJsApp"   # Target folder
 
       - name: Start IIS
         uses: appleboy/ssh-action@v0.1.10
@@ -57,6 +58,3 @@ jobs:
           port: 22
           script: |
             powershell -Command "Start-Service W3SVC"
-
-
-
