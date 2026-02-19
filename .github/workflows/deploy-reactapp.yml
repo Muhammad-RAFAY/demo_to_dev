@@ -1,5 +1,5 @@
 name: React CI/CD to Azure VM IIS
-  
+   
 on:
   push:
     branches:
