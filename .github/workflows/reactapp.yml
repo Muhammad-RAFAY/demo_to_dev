@@ -1,0 +1,47 @@
+name: React CI/CD to Azure VM IIS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Zip Build Folder
+        run: zip -r build.zip build
+
+      - name: Deploy to Azure VM
+        uses: appleboy/winrm-action@v1.0.0
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          port: 5985
+          script: |
+            Remove-Item -Recurse -Force C:\inetpub\wwwroot\*
+            
+      - name: Copy Files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          source: "build/*"
+          target: "C:/inetpub/wwwroot"
