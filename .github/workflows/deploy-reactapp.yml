@@ -69,3 +69,4 @@ jobs:
               $destination = 'C:\inetpub\wwwroot\ReactJsApp'
               Move-Item -Path $source -Destination $destination -Force
               Remove-Item -Recurse -Force 'C:\inetpub\wwwroot\ReactJsApp\build'
+              
