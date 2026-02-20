@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.AZURE_VM_USERNAME }}
           password: ${{ secrets.AZURE_VM_PASSWORD }}
           port: 22
-          source: "build/."                         # Only contents of build
+          source: "build"                         # Only contents of build
           target: "C:/inetpub/wwwroot/ReactJsApp"   # Target folder
 
       - name: Start IIS
@@ -56,3 +56,16 @@ jobs:
           script: |
             powershell -Command "Start-Service W3SVC"
  
+      - name: Move Build Contents and Cleanup
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          port: 22
+          script: |
+            powershell -Command "
+              $source = 'C:\inetpub\wwwroot\ReactJsApp\build\*'
+              $destination = 'C:\inetpub\wwwroot\ReactJsApp'
+              Move-Item -Path $source -Destination $destination -Force
+              Remove-Item -Recurse -Force 'C:\inetpub\wwwroot\ReactJsApp\build'
